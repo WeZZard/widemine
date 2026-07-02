@@ -1,12 +1,15 @@
-# Apps
+# Design System
 
-## Apps-Wide Design System
+## Shared Foundations
 
-This design system applies to apps under `apps/`. App-specific `CLAUDE.md` files may extend these rules with domain semantics, but should keep the shared foundations intact unless there is a clear product reason to diverge.
+This design system defines Minelogue's shared foundations. `CLAUDE.md` extends
+these rules with domain semantics, but should keep the shared foundations
+intact unless there is a clear product reason to diverge. (Carried over from
+the shared design system of the source monorepo.)
 
 ### Product Posture
 
-Apps in this repository should feel like focused work tools: quiet, dense, predictable, and built for repeated use. Prefer scan efficiency and stable layout over decorative presentation.
+Minelogue should feel like a focused work tool: quiet, dense, predictable, and built for repeated use. Prefer scan efficiency and stable layout over decorative presentation.
 
 Use:
 
@@ -167,7 +170,7 @@ For frontend changes:
 
 ### Browsers
 
-Apps under `apps/` may be viewed in embedded webviews (e.g. ChatGPT Atlas, Google Chrome, Apple Safari) that ship older WebKit versions than the system Safari. To avoid silent total-script failures, frontend JavaScript must not use ES2021+ features.
+Minelogue may be viewed in embedded webviews (e.g. ChatGPT Atlas, Google Chrome, Apple Safari) that ship older WebKit versions than the system Safari. To avoid silent total-script failures, frontend JavaScript must not use ES2021+ features.
 
 **Do not use:**
 

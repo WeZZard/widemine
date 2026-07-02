@@ -37,9 +37,9 @@ Contains:
 
 Rules:
 
-- Use apps-wide `control-height` for command buttons.
-- Use apps-wide `ui` typography for command buttons and search toggles.
-- Use apps-wide `body` typography for session/project metadata.
+- Use shared `control-height` for command buttons.
+- Use shared `ui` typography for command buttons and search toggles.
+- Use shared `body` typography for session/project metadata.
 - Search toggle active state uses the shared accent family.
 - The command bar should remain visually quiet; avoid heavy shadows and
   decorative treatments.
@@ -60,7 +60,7 @@ Rules:
 - Insert and remove the shelf with a bounded transition.
 - The shelf uses shared search control sizing:
   - search input height: 32px.
-  - search input typography: apps-wide `ui`.
+  - search input typography: shared `ui`.
   - search navigation buttons: compact 28px controls.
 - Preserve the same horizontal inset as nearby Timeline surfaces.
 - Keep a compact two-row rhythm: primary search row plus options row.
@@ -197,8 +197,8 @@ Rules:
   unavailable.
 - Do not show a slash separator in message navigation category labels.
 - Keep row height stable.
-- Preview text uses apps-wide `ui` typography.
-- Time and problem metadata use apps-wide `meta` typography.
+- Preview text uses shared `ui` typography.
+- Time and problem metadata use shared `meta` typography.
 
 #### 4.4. Waterfall Search Panel
 
@@ -207,8 +207,8 @@ Purpose: unified search and result navigation for Waterfall content.
 Rules:
 
 - Search input uses the same control height and typography as Timeline search.
-- Search result snippets use apps-wide `ui` typography.
-- Result metadata uses apps-wide `meta` or `kicker` typography depending on
+- Search result snippets use shared `ui` typography.
+- Result metadata uses shared `meta` or `kicker` typography depending on
   density.
 - Current result indication uses accent and must not resize rows.
 - Opening a subagent search result may open the required subagent panel.
@@ -241,7 +241,7 @@ Purpose: inspect raw payloads and structured details from Waterfall.
 
 Rules:
 
-- Raw/code payloads use apps-wide `code` typography.
+- Raw/code payloads use shared `code` typography.
 - Detail controls should not resize segmented controls when icons or problem
   indicators appear.
 - Raw panels should be visually subordinate to transcript content unless opened
