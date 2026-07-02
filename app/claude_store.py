@@ -13,6 +13,7 @@ from app.claude_parser import (
     ParsedTranscript,
     explicit_title_from_event,
     parse_jsonl_file,
+    parse_timestamp,
     title_candidate_from_text,
 )
 from app.config import resolve_projects_dir, source_info
@@ -505,9 +506,23 @@ def load_conversation(
             )
 
     root.summary.subagent_count = len(root.subagent_transcripts)
+    _sort_children_chronologically(root)
     _assign_workflow_siblings(root)
     attach_problem_flags(root)
     return root
+
+
+def _sort_children_chronologically(root: ConversationExport) -> None:
+    """Order subagent lanes by start time, not discovery (path) order.
+
+    The sort is stable, so children without a timestamp keep their relative
+    discovery order at the end."""
+    root.subagent_transcripts.sort(
+        key=lambda child: (
+            child.summary.time_created is None,
+            child.summary.time_created or 0,
+        )
+    )
 
 
 def get_source_info(source_path: str | Path | None = None) -> dict[str, Any]:
@@ -667,11 +682,11 @@ def build_timeline_payload(
     root = load_boot_export(opaque_id, source_path)
     if root is None:
         return None
-    # load_boot_export appends one skeleton child per discovered subagent, in
-    # discovery order — counts align by position.
+    # Counts are keyed by agentPath so they survive the chronological
+    # re-ordering of children in load_boot_export.
     discovered = _discover_subagents(main_path.parent, ref.session_id)
     counter = line_counter or (lambda _path: 0)
-    counts = [counter(path) for _, path, _, _, _ in discovered]
+    counts = {agent_path: counter(path) for _, path, agent_path, _, _ in discovered}
     seeds = capsule_seeds(root)
     return slim_export.timeline_export(
         root,
@@ -681,8 +696,19 @@ def build_timeline_payload(
     )
 
 
-def _read_first_event_nav(path: Path, session_id: str, agent_path: str) -> tuple[NavAddress | None, str, str | None, str | None]:
-    """Read the first valid JSON line to get nav address + title + model. Returns (nav, title, model, agent_id)."""
+def _read_first_event_nav(
+    path: Path, session_id: str, agent_path: str
+) -> tuple[NavAddress | None, str | None, str | None, str | None, int | None]:
+    """Read the file head for nav address, title, model, agent id, and start
+    timestamp. Nav/title/model come from the first valid line; the timestamp
+    scan continues a bounded number of lines because meta-ish first lines may
+    carry none. Returns (nav, title, model, agent_id, first_ts)."""
+    nav = None
+    title = None
+    model = None
+    agent_id = None
+    first_ts = None
+    scanned = 0
     try:
         with path.open("r", encoding="utf-8", errors="replace") as fh:
             for line in fh:
@@ -695,26 +721,31 @@ def _read_first_event_nav(path: Path, session_id: str, agent_path: str) -> tuple
                     continue
                 if not isinstance(raw, dict):
                     continue
-                agent_id = raw.get("agentId")
-                model = None
-                message = raw.get("message") if isinstance(raw.get("message"), dict) else None
-                if isinstance(message, dict) and isinstance(message.get("model"), str):
-                    model = message["model"]
-                title = explicit_title_from_event(raw)
-                nav = NavAddress(
-                    sessionId=session_id,
-                    jsonlFile=str(path),
-                    lineNumber=1,
-                    eventIndex=0,
-                    scope="subagent",
-                    agentPath=agent_path,
-                    elementType="event",
-                    view="raw",
-                )
-                return nav, title, model, agent_id
+                if nav is None:
+                    agent_id = raw.get("agentId")
+                    message = raw.get("message") if isinstance(raw.get("message"), dict) else None
+                    if isinstance(message, dict) and isinstance(message.get("model"), str):
+                        model = message["model"]
+                    title = explicit_title_from_event(raw)
+                    nav = NavAddress(
+                        sessionId=session_id,
+                        jsonlFile=str(path),
+                        lineNumber=1,
+                        eventIndex=0,
+                        scope="subagent",
+                        agentPath=agent_path,
+                        elementType="event",
+                        view="raw",
+                    )
+                first_ts = parse_timestamp(raw.get("timestamp"))
+                scanned += 1
+                if first_ts is not None or scanned >= 40:
+                    break
     except OSError:
         pass
-    return None, path.stem, None, None
+    if nav is None:
+        return None, path.stem, None, None, None
+    return nav, title, model, agent_id, first_ts
 
 
 def load_boot_export(
@@ -749,13 +780,14 @@ def load_boot_export(
                     part_nav_by_id[part.id] = part.nav
 
     for agent_id, path, agent_path, agent_type, agent_description in discovered:
-        nav, title, model, _ = _read_first_event_nav(path, opaque_id, agent_path)
+        nav, title, model, _, first_ts = _read_first_event_nav(path, opaque_id, agent_path)
         child_summary = ConversationSummary(
             id=f"{opaque_id}:{agent_path}",
             title=title or agent_description or agent_type or agent_id,
             directory=main.cwd,
             gitBranch=main.git_branch,
             version=None,
+            time_created=first_ts,
             model=model or "Unknown",
             message_count=0,
             subagent_count=0,
@@ -781,6 +813,7 @@ def load_boot_export(
         root.subagent_transcripts.append(child)
 
     root.summary.subagent_count = len(root.subagent_transcripts)
+    _sort_children_chronologically(root)
     _assign_workflow_siblings(root)
     attach_problem_flags(root)
     return root

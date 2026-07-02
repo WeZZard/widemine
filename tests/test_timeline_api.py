@@ -50,6 +50,36 @@ def test_timeline_payload_shape(populated_projects: Path, cache_dir: Path):
     assert by_path["main/agent-b"]["capsule_count"] == 1
 
 
+def test_timeline_children_ordered_chronologically(claude_projects: Path, cache_dir: Path):
+    """Lanes follow start time, not filesystem (alphabetical) discovery order."""
+    from tests.conftest import user_event, write_jsonl
+
+    project = claude_projects / "-chrono"
+    session = "sess-chrono"
+    write_jsonl(
+        project / f"{session}.jsonl",
+        [user_event("u1", None, session, "Chronology fixture")],
+    )
+    # agent-aaa sorts FIRST alphabetically but started LAST.
+    write_jsonl(
+        project / session / "subagents" / "agent-aaa.jsonl",
+        [user_event("a1", None, session, "late starter", ts="2026-01-01T00:05:00.000Z", agent_id="aaa")],
+    )
+    write_jsonl(
+        project / session / "subagents" / "agent-zzz.jsonl",
+        [user_event("z1", None, session, "early starter", ts="2026-01-01T00:01:00.000Z", agent_id="zzz")],
+    )
+
+    client = TestClient(app)
+    response = client.get(f"/api/conversation/claude/{_session_id()}/timeline")
+    assert response.status_code == 200
+    children = response.json()["subagent_transcripts"]
+    order = [child["first_nav"]["agentPath"] for child in children]
+    assert order == ["main/zzz", "main/aaa"], order
+    # capsule counts keyed by agentPath survive the re-ordering
+    assert all(child["capsule_count"] == 1 for child in children)
+
+
 def test_timeline_etag_roundtrip(populated_projects: Path, cache_dir: Path):
     client = TestClient(app)
     url = f"/api/conversation/claude/{_session_id()}/timeline"

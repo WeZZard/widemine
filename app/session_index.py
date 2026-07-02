@@ -22,7 +22,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = 1
+# v2: children ordered chronologically in the cached boot payload.
+SCHEMA_VERSION = 2
 _SCAN_CHUNK = 1 << 20
 
 

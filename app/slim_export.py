@@ -83,19 +83,22 @@ def timeline_export(
     export: ConversationExport,
     *,
     jsonl_file: str,
-    capsule_counts: list[int],
+    capsule_counts: dict[str, int],
     seeds: list[dict[str, Any]],
 ) -> dict[str, Any]:
     """Protocol v2 boot payload: capsule seeds instead of message bodies.
 
     Timeline geometry is fully determined by the seed list (main track) and
-    per-child capsule counts; content loads on demand via /track and /message.
+    per-child capsule counts. Counts are keyed by agentPath, not position, so
+    child ordering (chronological) is independent of discovery order.
     """
     children = []
-    for index, child in enumerate(export.subagent_transcripts):
+    for child in export.subagent_transcripts:
         skeleton = _track_skeleton(child)
-        if index < len(capsule_counts) and capsule_counts[index]:
-            skeleton["capsule_count"] = capsule_counts[index]
+        agent_path = (skeleton.get("first_nav") or {}).get("agentPath") or ""
+        count = capsule_counts.get(agent_path, 0)
+        if count:
+            skeleton["capsule_count"] = count
         children.append(skeleton)
     return {
         "protocol": 2,

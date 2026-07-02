@@ -1384,6 +1384,10 @@ async def api_conversation_timeline(request: Request, agent: str, session_id: st
         payload = await _run_parse(slim_export.slim_export, data)
         return JSONResponse(content=payload)
     fingerprint = await _run_parse(_session_fingerprint, agent, session_id)
+    # The payload shape depends on code, not just session files; version the
+    # ETag with the index schema so browsers drop cached payloads on upgrade.
+    if fingerprint:
+        fingerprint = f"{fingerprint}-s{session_index.SCHEMA_VERSION}"
     if _not_modified(request, fingerprint):
         return Response(status_code=304, headers=_etag_headers(fingerprint))
     body = await _run_parse(_timeline_body_gzip, session_id, fingerprint)
