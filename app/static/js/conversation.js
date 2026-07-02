@@ -4962,64 +4962,24 @@ function renderGraphStatus() {
   renderTimelineDetailPanel(capsule);
 }
 
-let graphScrollAnimation = null;
-
-function cancelGraphScrollAnimation() {
-  if (graphScrollAnimation !== null) cancelAnimationFrame(graphScrollAnimation.frame);
-  graphScrollAnimation = null;
-}
-
 function scrollGraphCapsuleIntoView(capsule, instant = false) {
   if (!capsule) return;
   const viewport = els.graphViewport;
   layoutGraph(viewport.clientWidth);
-  const capsuleKey = capsule.key;
-  // Re-resolve the capsule and its position on every read: track loads can
-  // replace capsule objects and shift geometry mid-flight, and the scroll
-  // must keep homing on where the capsule actually is.
-  const targetFor = () => {
-    const current = capsuleByKey.get(capsuleKey) || capsule;
-    const maxLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-    const maxTop = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
-    return {
-      left: Math.min(maxLeft, Math.max(0, current.x + current.width / 2 - viewport.clientWidth / 2)),
-      top: Math.min(maxTop, Math.max(0, current.y + current.height / 2 - viewport.clientHeight / 2)),
-    };
-  };
-  cancelGraphScrollAnimation();
-  if (instant) {
-    const target = targetFor();
-    viewport.scrollTo({ left: target.left, top: target.top, behavior: "auto" });
-    return;
-  }
-  // Single rAF-driven animation moving BOTH axes in lockstep along the chord
-  // to the (live) target, so long jumps travel diagonally instead of one
-  // axis settling before the other when native smooth scrolls get chained or
-  // interrupted.
-  const startLeft = viewport.scrollLeft;
-  const startTop = viewport.scrollTop;
-  const startTime = performance.now();
-  const initial = targetFor();
-  const distance = Math.hypot(initial.left - startLeft, initial.top - startTop);
-  if (distance < 1) return;
-  const duration = Math.min(900, Math.max(280, 240 + distance * 0.002));
-  const easeInOut = (p) => (p < 0.5 ? 2 * p * p : 1 - ((-2 * p + 2) * (-2 * p + 2)) / 2);
-  const animation = { frame: 0 };
-  graphScrollAnimation = animation;
-  const step = () => {
-    if (graphScrollAnimation !== animation) return;
-    const target = targetFor();
-    const progress = Math.min(1, (performance.now() - startTime) / duration);
-    const eased = easeInOut(progress);
-    viewport.scrollLeft = startLeft + (target.left - startLeft) * eased;
-    viewport.scrollTop = startTop + (target.top - startTop) * eased;
-    if (progress >= 1) {
-      graphScrollAnimation = null;
-      return;
-    }
-    animation.frame = requestAnimationFrame(step);
-  };
-  animation.frame = requestAnimationFrame(step);
+  // Native smooth scrolling: compositor-driven (immune to main-thread work
+  // during the flight) and diagonal — both axes animate on one curve with a
+  // long deceleration tail. Capsule positions are stable under track loads
+  // (geometry is count-based), so no mid-flight re-targeting is needed.
+  const current = capsuleByKey.get(capsule.key) || capsule;
+  const maxLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+  const maxTop = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+  const targetLeft = current.x + current.width / 2 - viewport.clientWidth / 2;
+  const targetTop = current.y + current.height / 2 - viewport.clientHeight / 2;
+  viewport.scrollTo({
+    left: Math.min(maxLeft, Math.max(0, targetLeft)),
+    top: Math.min(maxTop, Math.max(0, targetTop)),
+    behavior: instant ? "auto" : "smooth",
+  });
 }
 
 function scrollReaderCapsuleIntoView(capsule, instant = false) {
@@ -6002,14 +5962,11 @@ els.leftTabs.forEach((button) => {
 });
 
 els.graphViewport.addEventListener("scroll", scheduleGraphRender, { passive: true });
-els.graphViewport.addEventListener("wheel", cancelGraphScrollAnimation, { passive: true });
-els.graphViewport.addEventListener("touchstart", cancelGraphScrollAnimation, { passive: true });
 els.timelineHeaderViewport?.addEventListener("scroll", scheduleTimelineHeaderRender, { passive: true });
 els.timelineHeaderViewport?.addEventListener("wheel", (event) => {
   // Horizontal gestures scroll the agent list independently (native);
   // vertical gestures over the strip pass through to the canvas.
   if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
-    cancelGraphScrollAnimation();
     els.graphViewport.scrollTop += event.deltaY;
   }
 }, { passive: true });
