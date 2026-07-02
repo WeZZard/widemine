@@ -73,6 +73,12 @@ Purpose: fixed structural map of the main agent and subagents.
 
 Rules:
 
+- The agent list is its own horizontal scroller: it follows canvas panning,
+  but horizontal gestures over the header scroll the list independently
+  without moving the block canvas; the next horizontal canvas movement snaps
+  the list back into alignment. Vertical gestures over the header pass
+  through to the canvas. Selecting an agent jumps the canvas to that lane
+  (loading its content first when needed).
 - Agent cells fill their full column edge-to-edge: top, bottom, left, and right.
 - Text content keeps internal padding from those edges.
 - Do not use card borders for agent cells.

@@ -24,6 +24,8 @@ const state = {
   timelineDetailWindowCount: -1,
   timelineBlockStateKey: "",
   timelineHeaderWidth: -1,
+  timelineHeaderSyncedLeft: -1,
+  timelineHeaderFrame: null,
   pinnedTimelineDetailKeys: [],
   timelineDetailWindowLayout: null,
   timelineDetailLayoutFrame: null,
@@ -130,6 +132,7 @@ const els = {
   timelineSearchStatus: document.getElementById("timelineSearchStatus"),
   timelineSearchWarning: document.getElementById("timelineSearchWarning"),
   timelineHeader: document.getElementById("timelineHeader"),
+  timelineHeaderViewport: document.getElementById("timelineHeaderViewport"),
   graphSizer: document.getElementById("graphSizer"),
   graphLayer: document.getElementById("graphLayer"),
   graphEdges: document.getElementById("graphEdges"),
@@ -4182,11 +4185,28 @@ function timelineHeaderCellHtml(track) {
     </button>`;
 }
 
-function renderTimelineHeader(visibleTracks = null) {
-  if (!els.timelineHeader) return;
-  // Header cells share the horizontal window with lanes/blocks and are
-  // recycled through a pool: only tracks near the viewport hold DOM.
-  const renderTracks = visibleTracks || model.tracks.filter((track) => !track.timelineSearchHidden);
+function scheduleTimelineHeaderRender() {
+  if (state.timelineHeaderFrame !== null) return;
+  state.timelineHeaderFrame = requestAnimationFrame(() => {
+    state.timelineHeaderFrame = null;
+    renderTimelineHeader();
+  });
+}
+
+function renderTimelineHeader() {
+  if (!els.timelineHeader || !els.timelineHeaderViewport) return;
+  // The header strip is its own horizontal scroller: its cell window follows
+  // the strip's scroll position (which tracks the canvas by default but can
+  // be scrolled independently). Cells are recycled through a pool.
+  const strip = els.timelineHeaderViewport;
+  const stripLeft = strip.scrollLeft;
+  const stripRight = stripLeft + strip.clientWidth;
+  const overscanX = 320;
+  const renderTracks = model.tracks.filter((track) => {
+    if (track.timelineSearchHidden) return false;
+    const bounds = timelineTrackBounds(track);
+    return bounds.right >= stripLeft - overscanX && bounds.left <= stripRight + overscanX;
+  });
   const searchPresentation = timelineSearchPresentation();
   if (!timelineHeaderPool && window.TimelineRenderer) {
     timelineHeaderPool = window.TimelineRenderer.createTilePool(els.timelineHeader, {
@@ -4337,7 +4357,16 @@ function renderGraphVirtual() {
     els.graphEdges.setAttribute("viewBox", `0 0 ${model.width} ${model.height}`);
   }
 
-  renderTimelineHeader(visibleTracks);
+  // Keep the header strip attached to canvas panning: any horizontal canvas
+  // movement snaps the strip back into alignment, while vertical-only
+  // scrolling leaves an independently-scrolled strip where the user put it.
+  if (els.timelineHeaderViewport && state.timelineHeaderSyncedLeft !== viewLeft) {
+    state.timelineHeaderSyncedLeft = viewLeft;
+    if (els.timelineHeaderViewport.scrollLeft !== viewLeft) {
+      els.timelineHeaderViewport.scrollLeft = viewLeft;
+    }
+  }
+  renderTimelineHeader();
   renderTimelineTracks(visibleTracks);
 
   const windowTop = Math.max(0, viewTop - overscanY);
@@ -5160,8 +5189,17 @@ function selectTimelineTrack(trackId, options = {}) {
   state.timelineSelectedTrackId = trackId;
   renderLeftNavigation();
   scheduleGraphRender();
-  const canFocusTrack = track.firstCapsuleKey && options.focus !== false && !wasSelected;
-  if (canFocusTrack) {
+  const shouldFocus = options.focus !== false && !wasSelected;
+  if (shouldFocus && !track.firstCapsuleKey && trackNeedsLoad(track)) {
+    // Header browsing can select lanes whose content has not loaded yet;
+    // load the track so the click still jumps to its first block.
+    ensureTrackLoaded(trackId).then(() => {
+      if (state.timelineSelectedTrackId !== trackId) return;
+      if (track.firstCapsuleKey) focusCapsule(track.firstCapsuleKey, { scroll: true });
+    });
+    return;
+  }
+  if (shouldFocus && track.firstCapsuleKey) {
     focusCapsule(track.firstCapsuleKey, { scroll: true });
   } else {
     renderBreadcrumb();
@@ -5966,6 +6004,15 @@ els.leftTabs.forEach((button) => {
 els.graphViewport.addEventListener("scroll", scheduleGraphRender, { passive: true });
 els.graphViewport.addEventListener("wheel", cancelGraphScrollAnimation, { passive: true });
 els.graphViewport.addEventListener("touchstart", cancelGraphScrollAnimation, { passive: true });
+els.timelineHeaderViewport?.addEventListener("scroll", scheduleTimelineHeaderRender, { passive: true });
+els.timelineHeaderViewport?.addEventListener("wheel", (event) => {
+  // Horizontal gestures scroll the agent list independently (native);
+  // vertical gestures over the strip pass through to the canvas.
+  if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+    cancelGraphScrollAnimation();
+    els.graphViewport.scrollTop += event.deltaY;
+  }
+}, { passive: true });
 els.mainContent?.addEventListener("scroll", scheduleReaderVirtualRender, { passive: true });
 window.addEventListener("resize", () => {
   updateCommandBarHeight();

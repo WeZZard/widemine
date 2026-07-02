@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ conversation.summary.title }} | Minelogue</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="/static/css/base.css?v=20260702-perf-v8" />
+    <link rel="stylesheet" href="/static/css/base.css?v=20260702-perf-v9" />
   </head>
   <body>
     <div
@@ -217,38 +217,42 @@
               </div>
             </div>
           </section>
-          <div id="graphViewport" class="timeline-viewport" data-testid="overview-timeline">
-            <div id="sessionLoadingSkeleton" class="timeline-boot-skeleton" aria-hidden="true">
-              <div class="timeline-boot-skeleton-header">
-                <div id="sessionLoadingMessage" class="timeline-boot-status">Loading session data…</div>
-              </div>
-              <div class="timeline-boot-skeleton-lanes">
-                {% for lane in range(6) %}
-                <div class="timeline-boot-skeleton-lane">
-                  <div class="timeline-boot-skeleton-label"></div>
-                  {% for block in range(8) %}
-                  <div class="timeline-boot-skeleton-block"></div>
+          <div class="timeline-canvas-stack">
+            <div id="timelineHeaderViewport" class="timeline-header-viewport" data-testid="timeline-header-viewport" aria-label="Agent timeline header">
+              <div id="timelineHeader" class="timeline-header" data-testid="timeline-header" aria-label="Pinned agent timeline header"></div>
+            </div>
+            <div id="graphViewport" class="timeline-viewport" data-testid="overview-timeline">
+              <div id="sessionLoadingSkeleton" class="timeline-boot-skeleton" aria-hidden="true">
+                <div class="timeline-boot-skeleton-header">
+                  <div id="sessionLoadingMessage" class="timeline-boot-status">Loading session data…</div>
+                </div>
+                <div class="timeline-boot-skeleton-lanes">
+                  {% for lane in range(6) %}
+                  <div class="timeline-boot-skeleton-lane">
+                    <div class="timeline-boot-skeleton-label"></div>
+                    {% for block in range(8) %}
+                    <div class="timeline-boot-skeleton-block"></div>
+                    {% endfor %}
+                  </div>
                   {% endfor %}
                 </div>
-                {% endfor %}
               </div>
+              <div id="graphSizer" class="timeline-sizer"></div>
+              <div id="graphLayer" class="timeline-layer">
+                <svg id="graphEdges" class="timeline-connectors" aria-hidden="true"></svg>
+                <div id="graphLanes" class="timeline-tracks"></div>
+                <div id="graphCapsules" class="timeline-blocks"></div>
+              </div>
+              <div id="graphSelectionStatus" class="flow-selection-status" data-testid="selected-capsule-summary" aria-live="polite"></div>
             </div>
-            <div id="timelineHeader" class="timeline-header" data-testid="timeline-header" aria-label="Pinned agent timeline header"></div>
-            <div id="graphSizer" class="timeline-sizer"></div>
-            <div id="graphLayer" class="timeline-layer">
-              <svg id="graphEdges" class="timeline-connectors" aria-hidden="true"></svg>
-              <div id="graphLanes" class="timeline-tracks"></div>
-              <div id="graphCapsules" class="timeline-blocks"></div>
-            </div>
-            <div id="graphSelectionStatus" class="flow-selection-status" data-testid="selected-capsule-summary" aria-live="polite"></div>
           </div>
         </section>
       </main>
     </div>
     <div id="timelineDetailPanel" class="timeline-detail-dock hidden" data-testid="timeline-detail-dock" aria-label="Selected message details"></div>
-    <script src="/static/js/text_utils.js?v=20260702-perf-v8"></script>
-    <script src="/static/js/timeline_renderer.js?v=20260702-perf-v8"></script>
-    <script src="/static/js/opencode_renderer.js?v=20260702-perf-v8"></script>
-    <script src="/static/js/conversation.js?v=20260702-perf-v8"></script>
+    <script src="/static/js/text_utils.js?v=20260702-perf-v9"></script>
+    <script src="/static/js/timeline_renderer.js?v=20260702-perf-v9"></script>
+    <script src="/static/js/opencode_renderer.js?v=20260702-perf-v9"></script>
+    <script src="/static/js/conversation.js?v=20260702-perf-v9"></script>
   </body>
 </html>

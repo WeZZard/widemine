@@ -5592,3 +5592,28 @@ article.message.has-problem > .message-card {
     animation: none;
   }
 }
+
+/* Independent header strip: the agent list scrolls horizontally on its own,
+   follows canvas panning, and overlays the canvas top band. */
+.timeline-canvas-stack {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.timeline-header-viewport {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 117px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  z-index: var(--layer-container-sticky);
+  scrollbar-width: none;
+}
+
+.timeline-header-viewport::-webkit-scrollbar {
+  display: none;
+}
