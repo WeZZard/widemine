@@ -14,7 +14,7 @@ from app.main import app
 @pytest.fixture()
 def cache_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     cache = tmp_path / "viewer-cache"
-    monkeypatch.setenv("SESSION_VIEWER_CACHE_DIR", str(cache))
+    monkeypatch.setenv("INQUEST_CACHE_DIR", str(cache))
     return cache
 
 

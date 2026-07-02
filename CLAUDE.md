@@ -1,13 +1,13 @@
-# Session Viewer
+# Inquest
 
-This app extends the apps-wide design system in `../CLAUDE.md`.
+This app extends the shared design system in `docs/design-system.md`.
 
 ## Design System
 
-The Session Viewer-specific design system follows the app navigation hierarchy.
+The Inquest-specific design system follows the app navigation hierarchy.
 Shared typography, spacing, shape, color, control, and motion primitives come
-from `apps/CLAUDE.md`. This file defines how those primitives are applied to the
-Session Viewer domain.
+from `docs/design-system.md`. This file defines how those primitives are
+applied to the Inquest domain.
 
 ### 1. Navigation Map
 

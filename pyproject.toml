@@ -1,7 +1,7 @@
 [project]
-name = "claude-session-viewer"
+name = "inquest"
 version = "0.1.0"
-description = "Read-only web GUI for Claude Code JSONL sessions"
+description = "Cross-examine coding-agent sessions: timelines, transcripts, and (eventually) agent-as-judge evaluation"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

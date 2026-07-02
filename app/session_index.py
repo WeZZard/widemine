@@ -29,10 +29,10 @@ _SCAN_CHUNK = 1 << 20
 def _resolve_cache_dir() -> Path:
     import os
 
-    override = os.environ.get("SESSION_VIEWER_CACHE_DIR")
+    override = os.environ.get("INQUEST_CACHE_DIR")
     if override:
         return Path(override).expanduser()
-    return Path("~/.cache/session-viewer").expanduser()
+    return Path("~/.cache/inquest").expanduser()
 
 
 def index_db_path(opaque_id: str) -> Path:

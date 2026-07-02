@@ -5,7 +5,7 @@
  * Timeline/Waterfall layouts. Loaded before conversation.js so the shared
  * renderer can dispatch OpenCode parts here.
  *
- * Design principles (aligned with apps/session-viewer/.plan):
+ * Design principles (aligned with .plan):
  * - Each part card has a title bar with two-level category badges
  *   ("OpenCode / <subtype>"), a timestamp, Raw, and Copy JSON actions.
  * - Content is rendered as derived form rows; long values live in bounded
