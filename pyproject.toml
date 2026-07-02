@@ -1,5 +1,5 @@
 [project]
-name = "inquest"
+name = "widemine"
 version = "0.1.0"
 description = "Cross-examine coding-agent sessions: timelines, transcripts, and (eventually) agent-as-judge evaluation"
 readme = "README.md"

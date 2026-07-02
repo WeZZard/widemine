@@ -41,7 +41,7 @@ The reference page exposed 146 visible interactive elements in the initial Studi
 16. Back link: returns to the dashboard when browser history is present.
 17. Archive button: posts archive/unarchive and redirects after archiving.
 
-## Inquest Alignment Scope
+## WideMine Alignment Scope
 
 The Claude Code session viewer intentionally adopts the reference behaviors that support transcript browsing, isolation, and structural inspection:
 

@@ -1,12 +1,14 @@
-# Inquest
+# WideMine
 
-Hold an inquest over your coding-agent sessions.
+Mine every coding-agent session for the gems inside.
 
-Inquest renders Claude Code (JSONL) and OpenCode (SQLite) sessions as
+WideMine renders Claude Code (JSONL) and OpenCode (SQLite) sessions as
 interactive timelines and transcripts — hundreds of subagent lanes, spawn
-edges, and message blocks, at 60fps. The roadmap follows the name: reconstruct
-the record (today), cross-examine it (next), and return findings — an
-"agent as a judge" evaluating agent sessions from the GUI (the goal).
+edges, and message blocks, at 60fps. The name is the roadmap: mine wide across
+all your agent sessions (today), cross-examine what comes up (next), and grade
+the ore — an "agent as a judge" evaluating agent sessions from the GUI (the
+goal). An agent-session evaluation tool, built like a mine that never stops
+producing.
 
 ## Run
 
@@ -64,8 +66,8 @@ Timeline boot uses protocol v2 (`GET /api/conversation/{agent}/{id}/timeline`):
   140-char preview) plus per-subagent **capsule counts** — never message
   bodies. A 500-subagent session boots in a few hundred gzipped KB instead of
   tens of MB.
-- A persistent per-session SQLite index (`~/.cache/inquest`, override
-  with `INQUEST_CACHE_DIR`) caches newline counts per transcript file
+- A persistent per-session SQLite index (`~/.cache/widemine`, override
+  with `WIDEMINE_CACHE_DIR`) caches newline counts per transcript file
   (keyed by mtime+size) and the built boot payload (keyed by the session
   fingerprint), so warm boots are single-digit milliseconds. Deleting the
   cache only costs a rebuild.
@@ -110,6 +112,6 @@ items, Timeline blocks, and Timeline detail cards.
 
 ## License
 
-Inquest is dual-licensed: [AGPL-3.0-or-later](LICENSE) for open-source use,
+WideMine is dual-licensed: [AGPL-3.0-or-later](LICENSE) for open-source use,
 with a [commercial license](LICENSE-COMMERCIAL.md) available for uses the
 AGPL does not fit.

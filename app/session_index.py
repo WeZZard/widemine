@@ -29,10 +29,10 @@ _SCAN_CHUNK = 1 << 20
 def _resolve_cache_dir() -> Path:
     import os
 
-    override = os.environ.get("INQUEST_CACHE_DIR")
+    override = os.environ.get("WIDEMINE_CACHE_DIR")
     if override:
         return Path(override).expanduser()
-    return Path("~/.cache/inquest").expanduser()
+    return Path("~/.cache/widemine").expanduser()
 
 
 def index_db_path(opaque_id: str) -> Path:

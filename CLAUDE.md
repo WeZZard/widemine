@@ -1,13 +1,13 @@
-# Inquest
+# WideMine
 
 This app extends the shared design system in `docs/design-system.md`.
 
 ## Design System
 
-The Inquest-specific design system follows the app navigation hierarchy.
+The WideMine-specific design system follows the app navigation hierarchy.
 Shared typography, spacing, shape, color, control, and motion primitives come
 from `docs/design-system.md`. This file defines how those primitives are
-applied to the Inquest domain.
+applied to the WideMine domain.
 
 ### 1. Navigation Map
 
