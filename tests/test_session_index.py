@@ -16,7 +16,7 @@ from tests.conftest import write_jsonl
 @pytest.fixture()
 def cache_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     cache = tmp_path / "viewer-cache"
-    monkeypatch.setenv("WIDEMINE_CACHE_DIR", str(cache))
+    monkeypatch.setenv("MINELOGUE_CACHE_DIR", str(cache))
     return cache
 
 

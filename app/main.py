@@ -36,7 +36,7 @@ class _CachedStaticFiles(StaticFiles):
         return response
 
 
-app = FastAPI(title="WideMine")
+app = FastAPI(title="Minelogue")
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 app.mount("/static", _CachedStaticFiles(directory=str(Config.STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(Config.TEMPLATES_DIR))

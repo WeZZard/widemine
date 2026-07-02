@@ -1,13 +1,13 @@
-# WideMine
+# Minelogue
 
 This app extends the shared design system in `docs/design-system.md`.
 
 ## Design System
 
-The WideMine-specific design system follows the app navigation hierarchy.
+The Minelogue-specific design system follows the app navigation hierarchy.
 Shared typography, spacing, shape, color, control, and motion primitives come
 from `docs/design-system.md`. This file defines how those primitives are
-applied to the WideMine domain.
+applied to the Minelogue domain.
 
 ### 1. Navigation Map
 
